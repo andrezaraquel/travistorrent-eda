@@ -1,0 +1,22 @@
+---
+title: "FPCC2 Lab1 - Andreza Raquel"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, echo=FALSE}
+library(tidyverse)
+library(here)
+library(knitr)
+theme_set(theme_bw())
+```
+
+## Lendo e limpando os dados de projetos
+
+Os dados já processados dos projetos
+
+```{r read}
+projetos = read_csv(here::here("data/projetos.csv")) %>% 
+    filter(lang != "javascript")
+```
