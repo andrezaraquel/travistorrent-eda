@@ -17,6 +17,95 @@ theme_set(theme_bw())
 Os dados já processados dos projetos
 
 ```{r read}
-projetos = read_csv(here::here("data/projetos.csv")) %>% 
-    filter(lang != "javascript")
+projetos = read_csv(here::here("data/projetos.csv"))
 ```
+
+```{r}
+
+estranho <- projetos %>%
+  filter(team < 1)
+
+estranho
+
+```
+
+```{r read}
+projetos = projetos %>% 
+    filter(lang != "javascript", team >= 1)
+ 
+```
+
+ 
+
+# Atividade a ser realizada
+
+## Parte 2: você e um problema pequeno
+Dados obtidos do TravisTorrent
+Neste lab, usaremos os dados sobre uso de integração contínua em projetos open source no github que criamos juntos a partir dos dados disponibilizados pelo travistorrent. Os dados e o código que os gera está neste repositório no github. 
+O que fazer
+
+Seu objetivo nesta segunda parte é responder duas formuladas por mim em um relatório. As duas perguntas são: 
+### Como são os tamanhos de time nos projetos que usam travis em Java e em Ruby nos nossos dados? 
+### Ao comparar projetos em Java e em Ruby que tenham ao menos 10 contribuidores no time nos nossos dados, projetos de qual linguagem variam mais na proporção de builds cujo resultado é sucesso? 
+
+Antes de usar qualquer dado em seu relatório, é importante que você explore e descreva as variáveis que você usará. Assim, usando os dados do repositório acima (data/projetos.csv na versão atual ou em uma que você altere), crie uma seção em seu relatório que descreve as variáveis. Para cada uma, comente qual a distribuição dos dados dessas variáveis, em termos de centralidade, extremos, concentração e simetria. Há algo surpreendente ou estranho nos dados? Se sim, como você sugere que um analista de dados lide com a parte surpreendente/estranha (e como você lidou?)?
+
+
+### Como são os tamanhos de time nos projetos que usam travis em Java e em Ruby nos nossos dados? 
+
+# Análise dos dados
+
+## Número de projetos em cada linguagem
+
+```{r}
+projetos %>% 
+    group_by(lang) %>% 
+    summarise(n = n()) %>% 
+    ggplot(aes(x = lang, y = n)) + 
+    geom_col(fill = "darkcyan", color = "darkcyan")
+
+```
+
+
+
+## Tamanhos dos times em cada projeto, separados por linguagens
+
+```{r}
+projetos %>% 
+    ggplot(aes(x = lang, y = team)) + 
+    geom_jitter(alpha = .4, width = .4, size = 1.5) 
+```
+
+
+```{r}
+projetos %>% 
+    ggplot(aes(x= team)) + 
+    geom_histogram(bins = 30, fill = "white", color = "deeppink4") + 
+    facet_grid(. ~ lang)
+```
+
+
+
+```{r}
+
+freq <- projetos %>%
+  group_by(lang, team) %>%
+  summarise(n = n()) %>% 
+  mutate(freq = n / sum(n) * 100) 
+
+
+freq %>% 
+    ggplot(aes(x= team)) + 
+    geom_histogram(bins = 30, fill = "white", color = "maroon") + 
+    facet_grid(lang ~ .)
+
+freq
+
+
+```
+
+### Ao comparar projetos em Java e em Ruby que tenham ao menos 10 contribuidores no time nos nossos dados, projetos de qual linguagem variam mais na proporção de builds cujo resultado é sucesso?
+
+
+
+
