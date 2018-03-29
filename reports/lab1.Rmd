@@ -5,57 +5,51 @@ output:
     df_print: paged
 ---
 
-```{r setup, echo=FALSE}
+    Página para análise de dados vindos do TravisTorrent.
+
+```{r setup, warning=FALSE, message=FALSE}
 library(tidyverse)
 library(here)
 library(knitr)
+library(ggplot2)
 theme_set(theme_bw())
 ```
 
 ## Lendo e limpando os dados de projetos
 
-Os dados já processados dos projetos
+    Lendo os projetos coletados e formatados por Nazareno. 
 
 ```{r read}
 projetos = read_csv(here::here("data/projetos.csv"))
 ```
 
+    Analisando os dados para buscar anormalidades.
+    O filtro abaixo retornou um projeto com tamanho de time é igual a 0, e isso é muito estranho. Então, por enquanto, vamos tirá-lo da lista de projetos para ele não atrapalhar os resultados.
+    Vale salientar que a variável team é a mediana dos tamanhos dos times durante as builds realizadas.
+
 ```{r}
 
-estranho <- projetos %>%
+anormal <- projetos %>%
   filter(team < 1)
 
-estranho
+anormal
 
 ```
 
-```{r read}
+    Para isso, usamos a função de filtro para deixar de fora os projetos da linguagem javascript - são poucos projetos com essa linguagem - e com tamanho de time < 1.
+    
+```{r}
 projetos = projetos %>% 
     filter(lang != "javascript", team >= 1)
  
 ```
 
- 
-
-# Atividade a ser realizada
-
-## Parte 2: você e um problema pequeno
-Dados obtidos do TravisTorrent
-Neste lab, usaremos os dados sobre uso de integração contínua em projetos open source no github que criamos juntos a partir dos dados disponibilizados pelo travistorrent. Os dados e o código que os gera está neste repositório no github. 
-O que fazer
-
-Seu objetivo nesta segunda parte é responder duas formuladas por mim em um relatório. As duas perguntas são: 
-### Como são os tamanhos de time nos projetos que usam travis em Java e em Ruby nos nossos dados? 
-### Ao comparar projetos em Java e em Ruby que tenham ao menos 10 contribuidores no time nos nossos dados, projetos de qual linguagem variam mais na proporção de builds cujo resultado é sucesso? 
-
-Antes de usar qualquer dado em seu relatório, é importante que você explore e descreva as variáveis que você usará. Assim, usando os dados do repositório acima (data/projetos.csv na versão atual ou em uma que você altere), crie uma seção em seu relatório que descreve as variáveis. Para cada uma, comente qual a distribuição dos dados dessas variáveis, em termos de centralidade, extremos, concentração e simetria. Há algo surpreendente ou estranho nos dados? Se sim, como você sugere que um analista de dados lide com a parte surpreendente/estranha (e como você lidou?)?
-
-
-### Como são os tamanhos de time nos projetos que usam travis em Java e em Ruby nos nossos dados? 
 
 # Análise dos dados
-
-## Número de projetos em cada linguagem
+    Começando a análise, vamos observar quantos projetos existem em cada linguagem.
+    Para isso, precisamos agrupar os projetos pela linguagem (variável lang), utilizando a função group_by. Em seguida, usamos a função summarise com n = n() para contar quantas linhas foram retornadas em cada grupo. 
+    Queremos visualizar essa informação em um gráfico de barras, por isso usamos o ggplot em conjunto com o geom_col, como podemos ver abaixo. 
+    Com essse gráfico, podemos ver que a maioria dos projetos dessa base foi implementada em ruby.
 
 ```{r}
 projetos %>% 
@@ -67,25 +61,34 @@ projetos %>%
 ```
 
 
-
-## Tamanhos dos times em cada projeto, separados por linguagens
+### Tamanhos dos times em cada projeto, separados por linguagens
+    Podemos ir além e analisar o comportamento de algumas colunas nos dados. Começando com a coluna team, podemos observar o tamanho dos times de todos os projetos. 
+    Fazemos isso usando o ggplot, onde o eixo x é a linguagem do projeto e o eixo y a mediana dos tamanhos dos times.
+    A função geom_jitter espalha os dados no eixo x para facilitar a visualização.
+    No gráfico abaixo, nota-se que os times das duas linguagems têm tamanhos mais frequentes de até 25 pessoas. Mais acima, com até 50 pessoas existem mais alguns times, depois outros poucos até 100 e apenas um projeto ruby com mais de 200 pessoas.
 
 ```{r}
 projetos %>% 
     ggplot(aes(x = lang, y = team)) + 
-    geom_jitter(alpha = .4, width = .4, size = 1.5) 
+    geom_jitter(alpha = .4, width = .4, size = 2, color = "darkcyan") 
 ```
+
+    Outra forma de visualizar os tamanhos dos times é agrupando os projetos por faixas de valores, como no histograma abaixo. 
+    Outra informação extraída do histograma é que os tamanhos de times da maior parte dos projetos estão na segunda faixa de valores nas duas linguagens. o eixo x do histograma é o tamanho do time e o eixo y a quantidade de projetos.
 
 
 ```{r}
 projetos %>% 
     ggplot(aes(x= team)) + 
-    geom_histogram(bins = 30, fill = "white", color = "deeppink4") + 
+    geom_histogram(bins = 30, fill = "white", color = "darkcyan") + 
     facet_grid(. ~ lang)
 ```
 
-
-
+    Para a comparação entre as duas linguagens ficar mais justa e clara, podemos utilizar o mesmo intervalo de valores no histograma. Ou seja, a relação agora não será mais entre a linguagem e o tamanho do time, será entre a linguagem e o tamanho percentual do time, considerando o número de projetos da linguagem.
+    Para fazer isso, agrupamos os projetos por linguagem e por time, em seguida contamos as linhas (n) de cada agrupamento.
+    Em seguida, utilizamos a função mutate e dizemos que a quantidade (n) agora será o percentual de linhas em relação ao total ( n / sum(n) * 100).
+    Por fim, fazemos o histograma dessa relação.
+    
 ```{r}
 
 freq <- projetos %>%
@@ -96,16 +99,42 @@ freq <- projetos %>%
 
 freq %>% 
     ggplot(aes(x= team)) + 
-    geom_histogram(bins = 30, fill = "white", color = "maroon") + 
+    geom_histogram(bins = 30, fill = "white", color = "darkcyan") + 
     facet_grid(lang ~ .)
-
-freq
 
 
 ```
 
-### Ao comparar projetos em Java e em Ruby que tenham ao menos 10 contribuidores no time nos nossos dados, projetos de qual linguagem variam mais na proporção de builds cujo resultado é sucesso?
+
+    Vamos agora filtrar os projetos com ao menos 10 contribuidores e brincar um pouco com eles. Para isso, usaremos a função filter na variável team:
 
 
+```{r}
+projetos = projetos %>%
+    filter(team >= 10)  
+```
+
+### Proporção de builds cujo resultado é sucesso
+    Vamos observar a proporção de builds que foram bem sucedidos nesses projetos, utilizando a coluna build_success_prop presente nos dados.
+    No gráfico abaixo, podemos ver que a maioria dos projetos realizou 50% ou mais builds bem sucedidos.
+    
+```{r}
+projetos %>% 
+    ggplot(aes(x = lang, y = build_success_prop)) + 
+    geom_jitter(alpha = .4, width = .3, size = 2, color = "darkcyan") 
+```
+
+    
+
+    Podemos ver o mesmo resultado também em histogramas abaixo. Os resultados estão mostrando claramente uma concentração à direita, onde a proporção de builds é maior que 50%.
+    Nos histogramas abaixo, podemos ver que os projetos das duas linguagens variam bastante na proporção de builds com sucesso, pois os projetos nos dois histogramas estão em praticamente todas as faixas de valores de 0% a 100% de builds com sucesso.
+    
+```{r}
+projetos %>%
+    ggplot(aes(x=build_success_prop)) +
+    geom_histogram(bins = 100, fill = "white", color = "darkcyan") +
+    facet_grid(lang ~ .)
+```
 
 
+  
