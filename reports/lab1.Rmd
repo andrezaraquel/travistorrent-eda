@@ -25,7 +25,7 @@ projetos = read_csv(here::here("data/projetos.csv"))
 
     Analisando os dados para buscar anormalidades.
     O filtro abaixo retornou um projeto com tamanho de time é igual a 0, e isso é muito estranho. Então, por enquanto, vamos tirá-lo da lista de projetos para ele não atrapalhar os resultados.
-    Vale salientar que a variável team é a mediana dos tamanhos dos times durante as builds realizadas.
+    Vale salientar que a variável team é a mediana dos tamanhos de time que o projeto teve durante toda sua existência.
 
 ```{r}
 
@@ -63,7 +63,7 @@ projetos %>%
 
 ### Tamanhos dos times em cada projeto, separados por linguagens
     Podemos ir além e analisar o comportamento de algumas colunas nos dados. Começando com a coluna team, podemos observar o tamanho dos times de todos os projetos. 
-    Fazemos isso usando o ggplot, onde o eixo x é a linguagem do projeto e o eixo y a mediana dos tamanhos dos times.
+    Fazemos isso usando o ggplot, onde o eixo x é a linguagem do projeto e o eixo y a coluna team.
     A função geom_jitter espalha os dados no eixo x para facilitar a visualização.
     No gráfico abaixo, nota-se que os times das duas linguagems têm tamanhos mais frequentes de até 25 pessoas. Mais acima, com até 50 pessoas existem mais alguns times, depois outros poucos até 100 e apenas um projeto ruby com mais de 200 pessoas.
 
@@ -74,7 +74,7 @@ projetos %>%
 ```
 
     Outra forma de visualizar os tamanhos dos times é agrupando os projetos por faixas de valores, como no histograma abaixo. 
-    Outra informação extraída do histograma é que os tamanhos de times da maior parte dos projetos estão na segunda faixa de valores nas duas linguagens. o eixo x do histograma é o tamanho do time e o eixo y a quantidade de projetos.
+    Outra informação extraída do histograma é que o tamanho de time da maior parte dos projetos está na segunda faixa de valores nas duas linguagens, sendo as três primeiras faixas de valores (cujo time é composto por poucas pessoas) as mais populares. o eixo x do histograma é o tamanho do time e o eixo y a quantidade de projetos.
 
 
 ```{r}
@@ -84,7 +84,7 @@ projetos %>%
     facet_grid(. ~ lang)
 ```
 
-    Para a comparação entre as duas linguagens ficar mais justa e clara, podemos utilizar o mesmo intervalo de valores no histograma. Ou seja, a relação agora não será mais entre a linguagem e o tamanho do time, será entre a linguagem e o tamanho percentual do time, considerando o número de projetos da linguagem.
+    Para a comparação entre as duas linguagens ficar mais justa e clara, podemos utilizar o mesmo intervalo de valores no histograma. Ou seja, a relação agora não será mais entre a linguagem e o tamanho do time, será entre a linguagem e o tamanho percentual do time, considerando o número de projetos de cada linguagem.
     Para fazer isso, agrupamos os projetos por linguagem e por time, em seguida contamos as linhas (n) de cada agrupamento.
     Em seguida, utilizamos a função mutate e dizemos que a quantidade (n) agora será o percentual de linhas em relação ao total ( n / sum(n) * 100).
     Por fim, fazemos o histograma dessa relação.
@@ -126,8 +126,8 @@ projetos %>%
 
     
 
-    Podemos ver o mesmo resultado também em histogramas abaixo. Os resultados estão mostrando claramente uma concentração à direita, onde a proporção de builds é maior que 50%.
-    Nos histogramas abaixo, podemos ver que os projetos das duas linguagens variam bastante na proporção de builds com sucesso, pois os projetos nos dois histogramas estão em praticamente todas as faixas de valores de 0% a 100% de builds com sucesso.
+    Podemos ver o mesmo resultado também nos histogramas abaixo. Os resultados estão mostrando claramente uma concentração à direita, onde a proporção de builds é maior que 50%.
+    Podemos ver que os projetos das duas linguagens variam bastante na proporção de builds com sucesso, pois os projetos nos dois histogramas estão em praticamente todas as faixas de valores de 0% a 100% de builds com sucesso.
     
 ```{r}
 projetos %>%
