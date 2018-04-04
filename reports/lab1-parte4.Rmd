@@ -7,9 +7,6 @@ output:
 
     Página para análise de dados vindos do TravisTorrent.
 
-
-
-
 ```{r setup, warning=FALSE, message=FALSE}
 library(tidyverse)
 library(here)
@@ -26,9 +23,8 @@ theme_set(theme_bw())
 projetos = read_csv(here::here("data/projetos.csv"))
 ```
 
-    Analisando os dados para buscar anormalidades.
-    O filtro abaixo retornou um projeto com tamanho de time é igual a 0, e isso é muito estranho. Então, por enquanto, vamos tirá-lo da lista de projetos para ele não atrapalhar os resultados.
-    Vale salientar que a variável team é a mediana dos tamanhos de time que o projeto teve durante toda sua existência.
+    Analisando os dados para buscar coisas estranhas.
+    O filtro abaixo retornou um projeto com tamanho de time igual a 0, e isso é muito estranho. Então, por enquanto, vamos tirá-lo da lista de projetos para ele não atrapalhar os resultados.
 
 ```{r}
 
@@ -39,7 +35,7 @@ estranho
 
 ```
 
-Para isso, usamos a função de filtro para deixar de fora os projetos da linguagem javascript - são poucos projetos com essa linguagem - e com tamanho de time < 1.
+    Para isso, usamos a função de filtro para deixar de fora os projetos da linguagem javascript - são poucos projetos com essa linguagem - e com tamanho de time < 1.
     
 ```{r}
 projetos = projetos %>% 
@@ -47,140 +43,95 @@ projetos = projetos %>%
  
 ```
 
-## Critérios
-    Há uma visão geral das variáveis que são usadas para responder as perguntas que nos permita conhecer sua distribuição e valores extremos?
-  
-    Este critério está vinculado ao resultado de aprendizado As perguntas estão relacionadas com os conceitos que discutimos de análise descritiva e exploratória? (perguntas que são respondidas por "quantos eventos X existem" não são adequadas, conforme discutido em sala)
-  
-    Os métodos visuais e matemáticos usados para responder as perguntas são adequados e suficientes?
-    Adicione um comentário mencionando o que você achou melhor nos métodos e técnicas usadas, e sugerindo ao menos uma melhoria na resposta de alguma     das questões. Pode sugerir mais caso queira.
-
-    Há conclusões/discussões a partir da resposta das perguntas que lhe são convincente?
     
-## Qual a relação entre o tamanho do time e a quantidade de commits mensal em cada projeto?
+    Com os dados tratados, podemos formular e responder algumas perguntas relevantes para o entendimento da base.
+    
+### Primeira pergunta: Qual a relação entre o tamanho do time e a quantidade de commits mensal em cada projeto?
 
-    Aqui vamos analisar relação entre as variáveis team - que é o tamanho do time do projeto, então a faixa de valores é numérica - e commits_per_month - sendo o número de commits realizados por mês em cada projeto, ou seja, o número de commits total dividido pelo tempo de atividade do projeto, então os valores também são numéricos. O tamanho do time é medido levando em consideração a quantidade de pessoas que fez commit nos últimos três meses no projeto. 
+    Aqui vamos analisar a relação entre as variáveis team - que é o tamanho do time do projeto, então a faixa de valores é numérica, positiva e finita - e commits_per_month - sendo o número de commits realizados por mês em cada projeto, ou seja, o número de commits total dividido pelo tempo de atividade do projeto, então os valores também são numéricos, positivos e finitos. O tamanho do time é medido levando em consideração a quantidade de pessoas que fez commit nos últimos três meses no projeto, no caso, é a mediana dos tamanhos de time que o projeto teve durante toda sua existência, segundo o TravisTorrent. 
 
 ```{r}
 projetos %>%
     ggplot(aes(x = team, y = commits_per_month)) +
     geom_point() +
-    geom_jitter(alpha = .3, size = 2, color = "darkcyan") +
+    geom_jitter(alpha = .3, size = 4, color = "darkcyan") +
     ggtitle("Correlação entre o nº de commits/mês e o nº de pessoas no projeto") +
     xlab("Quantidade de pessoas no projeto") +
     ylab("Número de commits por mês") +
     theme(plot.title = element_text(hjust = 0.5)) 
 ```
 
-    Como podemos ver no gráfico acima, não temos como identificar se há uma relação bem definida entre as variáveis em questão, já que os projetos estão bem concentrados em uma faixa de valores. 
-    Na verdade, temos indícios de que a relação entre as variáveis é muito fraca, mas podemos adiar essa conclusão. 
-    
-    
-    
-    
-    Antes, veremos se a análise é facilitada se usarmos faixas de valores para visualizar os dados. Além de usar a estratégia de dividir por faixas de valores, vamos filtrar os projetos que têm times com menos de 50 pesoas. Faremos isso para facilitar a visualização porque a maior parte dos projetos concentra-se nessa faixa de valores. 
-    Essa estratégia é aplicada no gráfico abaixo. Chegamos, portanto à seguinte configuração: 
-
-```{r}
-# projetos %>%
-#     filter(team < 50) %>%
-#     ggplot(aes(cut(team, breaks = 4) , y = commits_per_month)) +
-#     geom_boxplot()  +
-#     geom_jitter(alpha = .1, size = 2, color = "darkcyan") +
-#     ggtitle("Correlação entre o nº de commits/mês e o nº de pessoas no projeto") +
-#     xlab("Quantidade de pessoas no projeto") +
-#     ylab("Número de commits por mês") +
-#     theme(plot.title = element_text(hjust = 0.5), legend.position="none")
-#     
-```
-
-    Como podemos ver, o gráfico acima ainda não é o ideal para verificarmos como os dados comportam-se. Para facilitar ainda mais a visualização, vamos acrescentar uma escala logarítimica ao eixo y.
-    Fazendo isso, chegamos ao gráfico abaixo:
+    Como podemos ver no gráfico acima, não há uma relação bem definida entre as variáveis em questão, já que os projetos estão bem concentrados em uma faixa de valores. 
+    Para dar mais indício de que a relação é bem fraca, podemos verificar os coeficientes de correlação de Pearson, Spearman e Kendall. Observe abaixo:
     
 ```{r}
-# projetos %>%
-#     filter(team <= 50) %>%
-#     ggplot(aes(cut(team, breaks = 4) , y = commits_per_month)) +
-#     geom_boxplot() +
-#     geom_jitter(alpha = .1, size = 2, color = "darkcyan") +
-#     scale_y_log10()+
-#     ggtitle("Correlação entre o nº de commits/mês e nº de pessoas no projeto") +
-#     xlab("Quantidade de pessoas no projeto") +
-#     ylab("Número de commits por mês (log10)") +
-#     theme(plot.title = element_text(hjust = 0.5), legend.position="none")
-#     
+projetos %>% 
+summarise(pearson = cor(team, commits_per_month, method = "pearson"), 
+            spearman = cor(team, commits_per_month, method = "spearman"),
+            kendall = cor(team, commits_per_month, method = "kendall"))
 ```
 
-    Acima vemos com mais clareza que os dados não têm uma relação forte, pois os projetos estão concentrado em pontos específicos.
+    Podemos perceber que o maior valor de correlação foi retornado pelo algoritmo de Pearson, porém esse valor não faz muito sentido porque Pearson é usado apenas quando há correlação linear entre as variáveis, o que não é o caso. Os outros dois algoritmos retornaram um valor bem baixo. 
+    Portanto, podemos concluir mais uma vez, que o número de commits mensal não tem relação com o número de pessoas que trabalham nos projetos dessa base de dados.
     
-    
-    
-    
+### Questão derivada da primeira pergunta: Há alguma linguagem onde essas duas variáveis tenham relação?
 
-## Separar por time, será que funciona?
-```{r}
-projetos %>%
-    filter(team <= 45) %>%
-    ggplot(aes(cut(team, breaks = 4) , y = commits_per_month)) +
-    geom_boxplot() +
-    geom_jitter(alpha = .1, width = .4, size = 4, color = "darkcyan") +
-    facet_grid(. ~ lang)
-    
-```
-
-## E se não tiver nenhuma relação com o tamanho do time, mas sim com o tamanho do projeto?
-    Vamos ver isso agora:
-
+    Para responder a essa perguta, basta separar os projetos de cada linguagem (variável lang - que é a linguagem do projeto, podendo ser java ou ruby.). 
+    Abaixo vemos que os gráficos para as duas linguagens não mudaram muito em relação ao gráfico anterior (onde os projetos das duas linguagens estavam juntos). Isso significa que a resposta também não muda quando trata-se de correlação entre o tamanho do time e o número de commits para projetos java ou para projetos ruby. 
 
 ```{r}
 projetos %>%
-    ggplot(aes(x = sloc_end, y = commits_per_month)) +
+    ggplot(aes(x = team , y = commits_per_month, color = lang)) +
     geom_point() +
-    geom_jitter(alpha = .4, width = .4, size = 4, color = "darkcyan") 
-```
-
-
-## Projetos que levaram mais tempo de implementação são necessariamente maiores?
-
-
-```{r}
-
-projetos  %>%
-    ggplot(aes(x = activity_period, y = sloc_end, color = lang)) +
-    geom_point() +
-    geom_jitter(alpha = .4, size = 2) 
-```
-
-
-```{r}
-
-projetos  %>%
-     ggplot(aes(x = activity_period, y = sloc_end, color = lang)) +
-    geom_point() +
-    geom_jitter(alpha = .4, size = 2) +
-    scale_y_log10() +
-    ggtitle("UMA LEGENDA AQUI") +
-    xlab("Período de atividade") +
-    ylab("Número de linhas de código") +
-    theme(plot.title = element_text(hjust = 0.5))
-    
-```
-
-
-```{r}
-
-projetos  %>%
-    ggplot(aes(x = activity_period, y = sloc_end, color = lang)) +
-    geom_point() +
-    geom_jitter(alpha = .4, size = 4) +
-    scale_y_log10() +
-    facet_grid(. ~ lang) +
-    ggtitle("UMA LEGENDA AQUI") +
-    xlab("Período de atividade") +
-    ylab("Número de linhas de código") +
+    geom_jitter(alpha = .3, size = 4) +
+    facet_grid(lang ~ .) +
+    ggtitle("Nº de pessoas no time vs. Nº de commits/mês em cada linguagem") +
+    xlab("Quantidade de pessoas no projeto") +
+    ylab("Número de commits por mês") +
     theme(plot.title = element_text(hjust = 0.5), legend.position="none")
     
-
 ```
 
+
+
+### Segunda pergunta: Projetos de qual linguagem tendem a terminar mais rápido?
+    
+    Para responder a essa pergunta vamos utilizar duas variáveis. A variável lang e a variável activity_period - que é o período de atividade do projeto em meses, medido com base no primeiro e último commits do projeto. O período de atividade dos projetos dessa base varia de 1 até 74 meses.
+    Vejamos:
+
+```{r}
+projetos  %>%
+    ggplot(aes(x = lang, y = activity_period, color = lang)) +
+    geom_point() +
+    geom_jitter(alpha = .4, size = 2) + 
+    ggtitle("Linguagem vs. Período de atividade") +
+    xlab("Linguagem") +
+    ylab("período de atividade (meses)") +
+    theme(plot.title = element_text(hjust = 0.5), legend.position="none")
+```
+
+
+    Com base no gráfico acima, podemos ver que alguns projetos ruby têm um período de atividade maior que todos os outros projetos java, com 70 meses ou mais. No entanto, essa informação não é suficiente para responder que os projetos java tendem a terminar mais rápido ou não, ou que ruby tende a demorar mais ou não, pois a duração de um projeto depende de várias variáveis. Além disso, os outros projetos das duas linguagens estão bem distribuídos entre 1 e 60 meses de duração. 
+    
+    Vamos, então, responder se os projetos que duram mais têm alguma relação com o número de linhas de código.
+
+#### Questão derivada da segunda pergunta: Projetos que levaram mais tempo de implementação são necessariamente maiores?
+
+    Para responder essa pergunta, além da variável activity_period, vamos utilizar a variável sloc_end - que é o número de linhas de código presentes na ultima versão "commitada" do projeto. Para facilitar a visualização, vamos observar o número de linhas de código em uma escala logarítmica. 
+
+
+```{r}
+projetos  %>%
+    ggplot(aes(x = sloc_end, y = activity_period, color = lang)) +
+    geom_point() +
+    geom_jitter(alpha = .4, size = 2) + 
+    scale_x_log10() + 
+    ggtitle("Período de atividade vs. tamanho do projeto") +
+    xlab("Número de linhas de código (log10)") +
+    ylab("Período de atividade (meses)") +
+    theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+     Com base no gráfico acima, podemos ver que a correlação entre as duas variáveis é bem fraca, já que os dados estão bem espalhados e não têm um formato que mostre alguma relação. Então, podemos responder que projetos com maior tempo de atividade NÃO têm, necessariamente, um número maior de linhas de código nessa base de dados. 
 
