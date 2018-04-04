@@ -59,39 +59,63 @@ projetos = projetos %>%
     
 ## Qual a relação entre o tamanho do time e a quantidade de commits mensal em cada projeto?
 
+    Aqui vamos analisar relação entre as variáveis team - que é o tamanho do time do projeto, então a faixa de valores é numérica - e commits_per_month - sendo o número de commits realizados por mês em cada projeto, ou seja, o número de commits total dividido pelo tempo de atividade do projeto, então os valores também são numéricos. O tamanho do time é medido levando em consideração a quantidade de pessoas que fez commit nos últimos três meses no projeto. 
+
 ```{r}
 projetos %>%
     ggplot(aes(x = team, y = commits_per_month)) +
     geom_point() +
-    geom_jitter(alpha = .4, size = 5, color = "darkcyan") 
+    geom_jitter(alpha = .3, size = 2, color = "darkcyan") +
+    ggtitle("Correlação entre o nº de commits/mês e o nº de pessoas no projeto") +
+    xlab("Quantidade de pessoas no projeto") +
+    ylab("Número de commits por mês") +
+    theme(plot.title = element_text(hjust = 0.5)) 
 ```
 
-
-```{r}
-projetos %>%
-    ggplot(aes(cut(team, breaks = 5) , y = commits_per_month)) +
-    geom_boxplot() 
-
-```
-
-```{r}
-projetos %>%
-    filter(team <= 45) %>%
-    ggplot(aes(cut(team, breaks = 4) , y = commits_per_month)) +
-    geom_boxplot()  
+    Como podemos ver no gráfico acima, não temos como identificar se há uma relação bem definida entre as variáveis em questão, já que os projetos estão bem concentrados em uma faixa de valores. 
+    Na verdade, temos indícios de que a relação entre as variáveis é muito fraca, mas podemos adiar essa conclusão. 
     
-```
+    
+    
+    
+    Antes, veremos se a análise é facilitada se usarmos faixas de valores para visualizar os dados. Além de usar a estratégia de dividir por faixas de valores, vamos filtrar os projetos que têm times com menos de 50 pesoas. Faremos isso para facilitar a visualização porque a maior parte dos projetos concentra-se nessa faixa de valores. 
+    Essa estratégia é aplicada no gráfico abaixo. Chegamos, portanto à seguinte configuração: 
 
 ```{r}
-projetos %>%
-    filter(team <= 45) %>%
-    ggplot(aes(cut(team, breaks = 4) , y = commits_per_month)) +
-    geom_boxplot() +
-    geom_jitter(alpha = .1, width = .4, size = 4, color = "darkcyan") +
-    scale_y_log10()
-    
+# projetos %>%
+#     filter(team < 50) %>%
+#     ggplot(aes(cut(team, breaks = 4) , y = commits_per_month)) +
+#     geom_boxplot()  +
+#     geom_jitter(alpha = .1, size = 2, color = "darkcyan") +
+#     ggtitle("Correlação entre o nº de commits/mês e o nº de pessoas no projeto") +
+#     xlab("Quantidade de pessoas no projeto") +
+#     ylab("Número de commits por mês") +
+#     theme(plot.title = element_text(hjust = 0.5), legend.position="none")
+#     
 ```
 
+    Como podemos ver, o gráfico acima ainda não é o ideal para verificarmos como os dados comportam-se. Para facilitar ainda mais a visualização, vamos acrescentar uma escala logarítimica ao eixo y.
+    Fazendo isso, chegamos ao gráfico abaixo:
+    
+```{r}
+# projetos %>%
+#     filter(team <= 50) %>%
+#     ggplot(aes(cut(team, breaks = 4) , y = commits_per_month)) +
+#     geom_boxplot() +
+#     geom_jitter(alpha = .1, size = 2, color = "darkcyan") +
+#     scale_y_log10()+
+#     ggtitle("Correlação entre o nº de commits/mês e nº de pessoas no projeto") +
+#     xlab("Quantidade de pessoas no projeto") +
+#     ylab("Número de commits por mês (log10)") +
+#     theme(plot.title = element_text(hjust = 0.5), legend.position="none")
+#     
+```
+
+    Acima vemos com mais clareza que os dados não têm uma relação forte, pois os projetos estão concentrado em pontos específicos.
+    
+    
+    
+    
 
 ## Separar por time, será que funciona?
 ```{r}
