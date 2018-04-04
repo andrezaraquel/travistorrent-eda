@@ -63,15 +63,14 @@ projetos = projetos %>%
 projetos %>%
     ggplot(aes(x = team, y = commits_per_month)) +
     geom_point() +
-    geom_jitter(alpha = .4, width = .4, size = 4, color = "darkcyan") 
+    geom_jitter(alpha = .4, size = 5, color = "darkcyan") 
 ```
 
 
 ```{r}
 projetos %>%
     ggplot(aes(cut(team, breaks = 5) , y = commits_per_month)) +
-    geom_boxplot() +
-    geom_jitter(alpha = .1, width = .4, size = 4, color = "darkcyan") 
+    geom_boxplot() 
 
 ```
 
@@ -79,8 +78,7 @@ projetos %>%
 projetos %>%
     filter(team <= 45) %>%
     ggplot(aes(cut(team, breaks = 4) , y = commits_per_month)) +
-    geom_boxplot() +
-    geom_jitter(alpha = .1, width = .4, size = 4, color = "darkcyan") 
+    geom_boxplot()  
     
 ```
 
@@ -102,21 +100,12 @@ projetos %>%
     ggplot(aes(cut(team, breaks = 4) , y = commits_per_month)) +
     geom_boxplot() +
     geom_jitter(alpha = .1, width = .4, size = 4, color = "darkcyan") +
-    
     facet_grid(. ~ lang)
     
 ```
 
 ## E se não tiver nenhuma relação com o tamanho do time, mas sim com o tamanho do projeto?
     Vamos ver isso agora:
-
-
-
-```{r read}
-projetos = read_csv(here::here("data/projetos.csv")) 
-projetos = projetos %>% 
-    filter(lang != "javascript", team >= 1)
-```
 
 
 ```{r}
@@ -128,3 +117,46 @@ projetos %>%
 
 
 ## Projetos que levaram mais tempo de implementação são necessariamente maiores?
+
+
+```{r}
+
+projetos  %>%
+    ggplot(aes(x = activity_period, y = sloc_end, color = lang)) +
+    geom_point() +
+    geom_jitter(alpha = .4, size = 2) 
+```
+
+
+```{r}
+
+projetos  %>%
+     ggplot(aes(x = activity_period, y = sloc_end, color = lang)) +
+    geom_point() +
+    geom_jitter(alpha = .4, size = 2) +
+    scale_y_log10() +
+    ggtitle("UMA LEGENDA AQUI") +
+    xlab("Período de atividade") +
+    ylab("Número de linhas de código") +
+    theme(plot.title = element_text(hjust = 0.5))
+    
+```
+
+
+```{r}
+
+projetos  %>%
+    ggplot(aes(x = activity_period, y = sloc_end, color = lang)) +
+    geom_point() +
+    geom_jitter(alpha = .4, size = 4) +
+    scale_y_log10() +
+    facet_grid(. ~ lang) +
+    ggtitle("UMA LEGENDA AQUI") +
+    xlab("Período de atividade") +
+    ylab("Número de linhas de código") +
+    theme(plot.title = element_text(hjust = 0.5), legend.position="none")
+    
+
+```
+
+
