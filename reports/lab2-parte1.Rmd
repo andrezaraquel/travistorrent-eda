@@ -1,0 +1,180 @@
+---
+title: "FPCC2 Lab2 Parte 1 - Andreza Raquel"
+output:
+  html_document:
+    df_print: paged
+---
+
+    Página para análise de dados vindos do TravisTorrent.
+
+```{r setup, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(here)
+library(knitr)
+library(ggplot2)
+theme_set(theme_bw())
+```
+
+## Lendo e limpando os dados de projetos
+
+    Lendo os projetos coletados e formatados por Nazareno. 
+
+```{r read}
+projetos = read_csv(here::here("data/projetos.csv"))
+```
+
+    
+
+    Para isso, usamos a função de filtro para deixar de fora os projetos da linguagem javascript - são poucos projetos com essa linguagem - e com tamanho de time < 1.
+    
+```{r}
+projetos = projetos %>% 
+    filter(lang != "javascript",!is.na(activity_period), !is.na(team), !is.na(lang), !is.na(sloc_end), team <= 60)
+ 
+```
+
+    
+    Com os dados tratados, podemos formular e responder algumas perguntas relevantes para o entendimento da base.
+    
+##Pergunta: Em qual linguagem, projetos com times de até 60 pessoas tendem a acabar mais rapidamente com um tamanho de código considerável?
+
+```{r}
+projetos %>%
+    filter(team <= 60) %>%
+    ggplot(aes(x = cut(activity_period, breaks = 4), y = sloc_end)) +
+    geom_point(aes(size = team, col = lang)) 
+    #labs(subtitle="x Vs y", 
+    #   y="yyy", 
+     #  x="xxx", 
+      # title="xyxyx", 
+       #caption = "Source: TravisTorrent")
+
+    
+```
+```{r}
+projetos %>%
+    filter(team <= 60) %>%
+    ggplot(aes(x = team, y = sloc_end, fill = lang)) +
+   # geom_point(aes(size = team, col = lang)) +
+    geom_point(aes(size = activity_period, col = lang)) +
+    facet_grid(. ~ lang)
+    #labs(subtitle="x Vs y", 
+    #   y="yyy", 
+     #  x="xxx", 
+      # title="xyxyx", 
+       #caption = "Source: TravisTorrent")
+
+    
+```
+
+```{r}
+projetos %>%
+    filter(team <= 60) %>%
+    ggplot(aes(x = team, y = sloc_end, fill = lang)) +
+   # geom_point(aes(size = team, col = lang)) +
+    geom_point(aes(size = activity_period, col = lang)) +
+    geom_line() +
+    facet_grid(. ~ lang)
+    #labs(subtitle="x Vs y", 
+    #   y="yyy", 
+     #  x="xxx", 
+      # title="xyxyx", 
+       #caption = "Source: TravisTorrent")
+```
+
+
+```{r}
+projetos %>%
+    filter(team <= 60) %>%
+    ggplot(aes(x = cut(team, breaks = 4), y = sloc_end)) +
+    geom_point(aes(size = activity_period, col = lang)) 
+    #labs(subtitle="x Vs y", 
+    #   y="yyy", 
+     #  x="xxx", 
+      # title="xyxyx", 
+       #caption = "Source: TravisTorrent")
+
+    
+```
+
+```{r}
+projetos %>%
+    ggplot(aes(x = activity_period, y = sloc_end)) +
+    geom_point(aes(size = activity_period, col = cut(team, breaks = c(0, 15, 30, 45, 60)))) +
+    facet_grid(. ~ lang)
+    #labs(subtitle="x Vs y", 
+    #   y="yyy", 
+     #  x="xxx", 
+      # title="xyxyx", 
+       #caption = "Source: TravisTorrent")
+
+    
+```
+```{r}
+projetos %>%
+    ggplot(aes(x = activity_period, y = sloc_end, fill = cut(team, breaks = c(0, 15, 30, 45, 60)))) +
+    geom_area() +
+    facet_grid(. ~ lang)
+    #labs(subtitle="x Vs y", 
+    #   y="yyy", 
+     #  x="xxx", 
+      # title="xyxyx", 
+       #caption = "Source: TravisTorrent")
+
+    
+```
+
+```{r}
+projetos %>%
+    ggplot(aes(x = cut(activity_period, breaks = c(0, 12, 24, 36, 48, 60, 72, 84), labels = c("Até 1 ano", "1 a 2 anos", "2 a 3 anos", "3 a 4 anos", "4 a 5 anos" , "5 a 6 anos", "6 a 7 anos")), y = team, fill = lang)) +
+    geom_col() 
+    #labs(subtitle="x Vs y", 
+    #   y="yyy", 
+     #  x="xxx", 
+      # title="xyxyx", 
+       #caption = "Source: TravisTorrent")
+
+    
+```
+
+```{r}
+projetos %>%
+    ggplot(aes(x = cut(activity_period, breaks = c(0, 12, 24, 36, 48, 60, 72, 84), labels = c("Até 1 ano", "1 a 2 anos", "2 a 3 anos", "3 a 4 anos", "4 a 5 anos" , "5 a 6 anos", "6 a 7 anos")), y = team, fill = lang)) +
+    geom_col(position = "dodge") 
+    #labs(subtitle="x Vs y", 
+    #   y="yyy", 
+     #  x="xxx", 
+      # title="xyxyx", 
+       #caption = "Source: TravisTorrent")
+
+    
+```
+```{r}
+projetos %>%
+    ggplot(aes(x = activity_period, y = team, fill = lang, colour = lang)) +
+    geom_area() 
+    #labs(subtitle="x Vs y", 
+    #   y="yyy", 
+     #  x="xxx", 
+      # title="xyxyx", 
+       #caption = "Source: TravisTorrent")
+
+    
+```
+
+```{r}
+projetos %>%
+    ggplot(aes(x = cut(activity_period, breaks = c(0, 12, 24, 36, 48, 60, 72, 84), labels = c("Até 1 ano", "1 a 2 anos", "2 a 3 anos", "3 a 4 anos", "4 a 5 anos" , "5 a 6 anos", "6 a 7 anos")), y = team, fill = lang)) +
+    geom_col(position = "dodge") 
+    #labs(subtitle="x Vs y", 
+    #   y="yyy", 
+     #  x="xxx", 
+      # title="xyxyx", 
+       #caption = "Source: TravisTorrent")
+
+    
+```
+
+
+
+    
