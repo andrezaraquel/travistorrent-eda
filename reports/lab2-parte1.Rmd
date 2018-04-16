@@ -78,13 +78,13 @@ grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
 ```
 
 
-    Utilizando a visualização de barras acima, percebemos que até o terceiro ano, os tamanhos dos times em geral tendem a crescer anualmente. Para cada linguagem especificamente, é perceptível o crescimento dos times ruby até o quarto ano e de projetos java até o segundo ano. Depois disso, os tamanhos dos times tendem a diminuir. 
-    
-    A partir de dois anos de projeto, começamos a perceber uma diferença maior nos tamanhos dos times, vendo claramente que projetos ruby possuem mais pessoas na equipe.
-    No gráfico de baixo, podemos perceber a relação entre o número de linhas de códigos e o período de atividade do projeto. O que podemos destacar é que a partir da faixa de valores de 2 a 3 anos, o número de linhas de códigos tende a diminuir. 
-    É importante notar, também, que cada barra representa o acumulado de valores para projetos em cada período de tempo. Então os valores podem estar diminuindo simplesmente pelo fato de que o número de projetos diminui e não temos como esclarecer isso apenas olhando para esses gráficos.
-    Percebemos também que os tamanhos do times de projetos java e ruby são bem próximos para projetos que duram 1 ano ou de 1 ou 2 anos, sendo praticamente impossível identificar em qual linguagem os times são maiores. O mesmo acontece para o número de linhas de códigos em projetos de 3 a 4 anos. 
-    Essas "fragilidades" vão ser atacadas pela visualização abaixo.
+Utilizando a visualização de barras acima, percebemos que até o terceiro ano, os tamanhos dos times em geral tendem a crescer anualmente. Para cada linguagem especificamente, é perceptível o crescimento dos times ruby até o quarto ano e de projetos java até o segundo ano. Depois disso, os tamanhos dos times tendem a diminuir. A partir de dois anos de projeto, começamos a perceber uma diferença maior nos tamanhos dos times, vendo claramente que projetos ruby possuem mais pessoas na equipe.
+
+No gráfico de baixo, podemos perceber a relação entre o número de linhas de códigos e o período de atividade do projeto. O que podemos destacar é que a partir da faixa de valores de 2 a 3 anos, o número de linhas de códigos tende a diminuir. 
+
+É importante notar que cada barra representa o acumulado de valores para projetos em cada período de tempo. Então os valores podem estar diminuindo simplesmente pelo fato de que o número de projetos diminui e não temos como esclarecer isso apenas olhando para esses gráficos.
+Percebemos também que os tamanhos do times de projetos java e ruby são bem próximos para projetos que duram 1 ano ou de 1 ou 2 anos, sendo praticamente impossível identificar em qual linguagem os times são maiores. O mesmo acontece para o número de linhas de códigos em projetos de 3 a 4 anos. 
+Essas "fragilidades" vão ser atacadas pela visualização abaixo.
 
 
 
@@ -114,10 +114,15 @@ grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
 ```
 
 
-    No primeiro gráfico da visualização acima ataca as "fragilidades" da primeira visualização por exibir as barras das duas linguagens uma ao lado da outra, sendo mais fácil a comparação em todas as faixas de valores. Então, podemos perceber que os tamanhos de times java são menores no geral para projetos de até 1 ano, de 1 a 2 anos, de 3 a 4 anos e de 5 a 6 anos. Em projetos de 2 a 3 anos e de 4 a 5 anos, os tamanhos de projetos java ultrapassam os tamanhos ruby. Não existem projetos java nessa base que duraram de 6 a 7 anos.
-    Da mesma forma, agora podemos ver no segundo gráfico da visualização acima, que o tamanho dos códigos dos projetos java são um pouco maiores que os códigos dos projetos ruby na faixa de valores de 3 a 4 anos. 
-    Apesar de resolver os "problemas" da comparação entre os tamanhos dos times e dos valores acumulados, a visualização acima ainda não é a ideal em alguns cenários, por exibir dois gráficos dos relacionamentos entre as quatro variáveis propostas. 
-    A seguir vamos mostrar como é possível inserir as 4 variáveis em um mesmo gráfico e quais são os prós e contras dessa abordagem.
+A visualização acima ataca as "fragilidades" da primeira visualização por exibir as barras das duas linguagens uma ao lado da outra, sendo mais fácil a comparação em todas as faixas de valores, e por mostrar o tamanho da barra referente ao maior valor e não ao acumulado de valores. 
+ 
+No primeiro gráfico, podemos perceber que os tamanhos de times java são menores no geral para projetos de até 1 ano, de 1 a 2 anos, de 3 a 4 anos e de 5 a 6 anos. Em projetos de 2 a 3 anos e de 4 a 5 anos, os tamanhos de projetos java ultrapassam os tamanhos ruby. Não existem projetos java nessa base que duraram de 6 a 7 anos.
+ 
+Da mesma forma, agora podemos ver no segundo gráfico da visualização acima, que os códigos dos projetos java são um pouco maiores que os códigos dos projetos ruby na faixa de valores de 3 a 4 anos.
+
+Apesar de resolver os "problemas" da comparação entre os tamanhos dos times e dos valores acumulados, a visualização acima ainda não é a ideal em alguns cenários, por exibir dois gráficos dos relacionamentos entre as quatro variáveis propostas. I
+
+A seguir vamos mostrar como é possível inserir as 4 variáveis em um mesmo gráfico e quais são os prós e contras de cada abordagem.
 
 
 
@@ -135,9 +140,10 @@ projetos %>%
 ```
 
 
-    No gráfico acima, vemos o relacionamento entre o tamanho dos projetos e o tamanho dos times.
-    Percebemos que as variáveis não são bem correlatas, pois, independente do tamanho dos times, o tamanho do projeto sempre varia mais ou menos na mesma faixa de valores nas duas linguagens. Vemos isso ao observar que a maioria dos pontos concentra-se mais abaixo no gráfico. É possível perceber também que apenas alguns projetos java e ruby têm picos de valores que ultrapassam a maioria, sendo um projeto java, em específico, que foge ainda mais do padrão observado, sendo bem maior que todos.
-    Não conseguimos chegar a uma conclusão bem definida no que diz respeito ao período de atividade dos projetos das duas linguagens, pois o tamanho dos pontos não é uma coisa muito fácil de diferenciar. Veremos como responder isso adiante.
+No gráfico acima, vemos o relacionamento entre o tamanho dos projetos e o tamanho dos times.
+Percebemos que as variáveis não são bem correlatas, pois, independente do tamanho dos times, o tamanho do projeto sempre varia mais ou menos na mesma faixa de valores nas duas linguagens. Vemos isso ao observar que a maioria dos pontos concentra-se mais abaixo no gráfico. É possível perceber também que apenas alguns projetos java e ruby têm picos de valores que ultrapassam a maioria. Há um projeto java, em específico, que foge ainda mais do padrão observado, sendo bem maior que todos.
+
+Não conseguimos chegar a uma conclusão bem definida no que diz respeito ao período de atividade dos projetos das duas linguagens, pois o tamanho dos pontos não é uma coisa muito fácil de diferenciar. Veremos como resolver isso adiante.
 
 ```{r}
 projetos %>%
@@ -153,7 +159,7 @@ projetos %>%
        title="Tamanhos dos times e linhas de código") 
 ```
 
-    No gráfico acima, usamos a escala logarítmica no eixo y e separamos os pontos das linguagens para facilitar a visualização. Nele podemos observar que a maioria dos pontos das duas linguagens concentra-se do lado esquerdo, nos levando à conclusão de que a maioria dos projetos tem times pequenos (menos de 30 pessoas).
+No gráfico acima, usamos a escala logarítmica no eixo y e separamos os pontos das linguagens para facilitar a visualização. Nele podemos observar que a maioria dos pontos das duas linguagens concentra-se do lado esquerdo, nos levando à conclusão de que a maioria dos projetos tem times pequenos (menos de 30 pessoas).
 
 
 
@@ -169,7 +175,7 @@ projetos %>%
     
 ```
 
-    Na visualização acima, podemos perceber que existem vários projetos ruby que ultrapassaram 60 meses de desenvolvimento, enquanto java possui apenas 1. Em relação aos tamanhos dos times, podemos perceber que a maioria em ambas as linguagens é de 0 a 15 pessoas. Fica difícil, no entanto, observar os tamanhos dos códigos nesse gráfico. Então vamos mudar o gráfico para facilitar a observação dessa variável.
+Na visualização acima, podemos perceber que existem vários projetos ruby que ultrapassaram 60 meses de desenvolvimento, enquanto java possui apenas 1. Em relação aos tamanhos dos times, podemos perceber que a maioria em ambas as linguagens é de 0 a 15 pessoas. Fica difícil, no entanto, observar os tamanhos dos códigos nesse gráfico. Então vamos mudar o gráfico para facilitar a observação dessa variável.
 
 
 ```{r}
@@ -186,8 +192,8 @@ projetos %>%
     
 ```
 
-    No gráfico acima, usamos a representação logarítmica no eixo y para facilitar a visualização dos tamanhos de código. Essa visualização nos faz perceber o comportamento do tamanho de código dos projetos à medida que o período de atividade aumenta. Não vemos uma correlação bem definida entre as duas variáveis, mas podemos perceber que projetos java tendem a possuir mais linhas de código no geral do que projetos ruby. Essa conclusão é possível ao repararmos que os pontos dos projetos java projetam-se mais acima que os pontos dos projetos ruby, no geral. Aqui também não é muito fácil perceber em qual linguagem os projetos possuem times com maior número de pessoas, mas essa questão já foi sanada anteriormente.
+No gráfico acima, usamos a representação logarítmica no eixo y para facilitar a visualização dos tamanhos de código. Essa visualização nos faz perceber o comportamento do tamanho de código dos projetos à medida que o período de atividade aumenta. Não vemos uma correlação bem definida entre as duas variáveis, mas podemos perceber que projetos java tendem a possuir mais linhas de código no geral do que projetos ruby. Essa conclusão é possível ao repararmos que os pontos dos projetos java projetam-se mais acima que os pontos dos projetos ruby, no geral. Aqui também não é muito fácil perceber em qual linguagem os projetos possuem times com maior número de pessoas, mas essa questão já foi sanada anteriormente.
 
-
-    Podemos perceber, então, que cada gráfico possibilita a análise facilitada de algum fator relacionado aos dados. Não temos, portanto, um gráfico que seja bom ou ruim, temos gráficos que respondem melhor determinada pergunta ou outra. Basta encontrar um gráfico que melhor se adeque ao que queremos responder. 
-    Nesse artigo, por exemplo, precisamos variar os canais onde cada variável era exibida para facilitar a análise dos relacionamentos entre todas as variáveis. Assim, chegamos a pequenos resultados que, somados, respondem á pergunta proposta.
+Podemos perceber, então, que cada gráfico possibilita a análise facilitada de algum fator relacionado aos dados. Não temos, portanto, um gráfico que seja bom ou ruim, temos gráficos que respondem melhor determinada pergunta ou outra. Por isso os termos "fragilidade" e "problema" estão entre aspas no texto. Basta encontrar um gráfico que melhor se adeque ao que queremos responder.
+    
+Nesse artigo, por exemplo, precisamos variar os canais onde cada variável era exibida para facilitar a análise dos relacionamentos entre todas as variáveis. Assim, chegamos a pequenos resultados que, somados, respondem á pergunta proposta.
