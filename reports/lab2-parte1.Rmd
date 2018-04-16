@@ -5,176 +5,189 @@ output:
     df_print: paged
 ---
 
-    Página para análise de dados vindos do TravisTorrent.
+Página para análise de dados vindos do TravisTorrent.
 
 ```{r setup, warning=FALSE, message=FALSE}
 library(tidyverse)
 library(here)
 library(knitr)
 library(ggplot2)
+library(grid)
+library(dplyr)
 theme_set(theme_bw())
 ```
 
 ## Lendo e limpando os dados de projetos
 
-    Lendo os projetos coletados e formatados por Nazareno. 
+Para começar, vamos ler os projetos coletados e formatados por Nazareno. 
 
 ```{r read}
 projetos = read_csv(here::here("data/projetos.csv"))
 ```
+    
+Nesse artigo, vamos analisar os dados e tentar responder a seguinte pesgunta:
+    
+##Qual a relação existente entre o tamanho do time, o período de atividade do projeto e o tamanho do projeto em termos de linhas de código final para projetos java e ruby com times não maiores que 60 pessoas?
 
     
-
-    Para isso, usamos a função de filtro para deixar de fora os projetos da linguagem javascript - são poucos projetos com essa linguagem - e com tamanho de time < 1.
+Para isso, vamos utilizar quatro variáveis presentes nos dados. São elas:
     
+* **team:** que é o tamanho do time do projeto, então a faixa de valores é numérica, positiva e finita.
+* **lang:** que é a linguagem do projeto, podendo ser java ou ruby.
+* **activity_period:** que é o período de atividade do projeto em meses, medido com base no primeiro e último commits do projeto.
+* **sloc_end:** que é o número de linhas de código presentes na ultima versão "commitada" do projeto.
+   
+Mas antes, vamos filtrar os projetos e deixar apenas os que queremos. Para isso, usamos a função de filtro para deixar de fora os projetos da linguagem javascript - são poucos projetos com essa linguagem, e precisamos focar na pergunta. Também vamos garantir que não teremos valores nulos para nenhuma das variáveis que vamos utilizar. Também queremos filtrar projetos com times menores ou iguais a 60 pessoas (essa é uma exigência para responder a pergunta). Fazemos isso da seguinte forma: 
+   
+      
 ```{r}
 projetos = projetos %>% 
-    filter(lang != "javascript",!is.na(activity_period), !is.na(team), !is.na(lang), !is.na(sloc_end), team <= 60)
+    filter(lang != "javascript", !is.na(team), !is.na(lang), !is.na(activity_period), !is.na(sloc_end), team <= 60)
  
 ```
 
-    
-    Com os dados tratados, podemos formular e responder algumas perguntas relevantes para o entendimento da base.
-    
-##Pergunta: Em qual linguagem, projetos com times de até 60 pessoas tendem a acabar mais rapidamente com um tamanho de código considerável?
+Agora vamos começar a análise:
+
+
 
 ```{r}
-projetos %>%
-    filter(team <= 60) %>%
-    ggplot(aes(x = cut(activity_period, breaks = 4), y = sloc_end)) +
-    geom_point(aes(size = team, col = lang)) 
-    #labs(subtitle="x Vs y", 
-    #   y="yyy", 
-     #  x="xxx", 
-      # title="xyxyx", 
-       #caption = "Source: TravisTorrent")
+plot1 <- projetos %>%
+    ggplot(aes(x = cut(activity_period, breaks = c(0, 12, 24, 36, 48, 60, 72, 84), labels = c("Até 1 ano", "1 a 2 anos", "2 a 3 anos", "3 a 4 anos", "4 a 5 anos" , "5 a 6 anos", "6 a 7 anos")), y = team, fill = lang)) +
+    geom_col() +
+    labs(subtitle="Período de atividade Vs Tamanho do time", 
+       x="Período de atividade do projeto",
+       y="Tamanho do time", 
+       title="Tamanhos de times dos projetos de várias idades") +
+     theme(legend.title = element_blank())
+
+
+plot2 <- projetos %>%
+    ggplot(aes(x = cut(activity_period, breaks = c(0, 12, 24, 36, 48, 60, 72, 84), labels = c("Até 1 ano", "1 a 2 anos", "2 a 3 anos", "3 a 4 anos", "4 a 5 anos" , "5 a 6 anos", "6 a 7 anos")), y = sloc_end, fill = lang)) +
+    geom_col() +
+    labs(subtitle="Período de atividade Vs Tamanho do time", 
+       x="Período de atividade do projeto",
+       y="Número de linhas de código", 
+       title="Tamanhos de códigos dos projetos de várias idades") +
+     theme(legend.title = element_blank())
+
+
+
+grid.newpage()
+grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
+    
+```
+
+
+    Utilizando a visualização de barras acima, percebemos que até o terceiro ano, os tamanhos dos times em geral tendem a crescer anualmente. Para cada linguagem especificamente, é perceptível o crescimento dos times ruby até o quarto ano e de projetos java até o segundo ano. Depois disso, os tamanhos dos times tendem a diminuir. 
+    
+    A partir de dois anos de projeto, começamos a perceber uma diferença maior nos tamanhos dos times, vendo claramente que projetos ruby possuem mais pessoas na equipe.
+    No gráfico de baixo, podemos perceber a relação entre o número de linhas de códigos e o período de atividade do projeto. O que podemos destacar é que a partir da faixa de valores de 2 a 3 anos, o número de linhas de códigos tende a diminuir. 
+    É importante notar, também, que cada barra representa o acumulado de valores para projetos em cada período de tempo. Então os valores podem estar diminuindo simplesmente pelo fato de que o número de projetos diminui e não temos como esclarecer isso apenas olhando para esses gráficos.
+    Percebemos também que os tamanhos do times de projetos java e ruby são bem próximos para projetos que duram 1 ano ou de 1 ou 2 anos, sendo praticamente impossível identificar em qual linguagem os times são maiores. O mesmo acontece para o número de linhas de códigos em projetos de 3 a 4 anos. 
+    Essas "fragilidades" vão ser atacadas pela visualização abaixo.
+
+
+
+```{r}
+plot1 <- projetos %>%
+    ggplot(aes(x = cut(activity_period, breaks = c(0, 12, 24, 36, 48, 60, 72, 84), labels = c("Até 1 ano", "1 a 2 anos", "2 a 3 anos", "3 a 4 anos", "4 a 5 anos" , "5 a 6 anos", "6 a 7 anos")), y = team, fill = lang)) +
+    geom_col(position = "dodge") +
+    labs(subtitle="Período de atividade Vs Tamanho do time", 
+       x="Período de atividade do projeto", 
+       y="Tamanho do time", 
+       title="Tamanhos de times dos projetos de várias idades") +
+     theme(legend.title = element_blank())
+
+plot2 <- projetos %>%
+    ggplot(aes(x = cut(activity_period, breaks = c(0, 12, 24, 36, 48, 60, 72, 84), labels = c("Até 1 ano", "1 a 2 anos", "2 a 3 anos", "3 a 4 anos", "4 a 5 anos" , "5 a 6 anos", "6 a 7 anos")), y = sloc_end, fill = lang)) +
+    geom_col(position = "dodge") +
+    labs(subtitle="Período de atividade Vs Tamanho do código", 
+       x="Período de atividade do projeto", 
+       y="Tamanho do código", 
+       title="Tamanhos de times dos projetos de várias idades") +
+     theme(legend.title = element_blank())
+
+grid.newpage()
+grid.draw(rbind(ggplotGrob(plot1), ggplotGrob(plot2), size = "last"))
 
     
 ```
+
+
+    No primeiro gráfico da visualização acima ataca as "fragilidades" da primeira visualização por exibir as barras das duas linguagens uma ao lado da outra, sendo mais fácil a comparação em todas as faixas de valores. Então, podemos perceber que os tamanhos de times java são menores no geral para projetos de até 1 ano, de 1 a 2 anos, de 3 a 4 anos e de 5 a 6 anos. Em projetos de 2 a 3 anos e de 4 a 5 anos, os tamanhos de projetos java ultrapassam os tamanhos ruby. Não existem projetos java nessa base que duraram de 6 a 7 anos.
+    Da mesma forma, agora podemos ver no segundo gráfico da visualização acima, que o tamanho dos códigos dos projetos java são um pouco maiores que os códigos dos projetos ruby na faixa de valores de 3 a 4 anos. 
+    Apesar de resolver os "problemas" da comparação entre os tamanhos dos times e dos valores acumulados, a visualização acima ainda não é a ideal em alguns cenários, por exibir dois gráficos dos relacionamentos entre as quatro variáveis propostas. 
+    A seguir vamos mostrar como é possível inserir as 4 variáveis em um mesmo gráfico e quais são os prós e contras dessa abordagem.
+
+
+
 ```{r}
 projetos %>%
     filter(team <= 60) %>%
     ggplot(aes(x = team, y = sloc_end, fill = lang)) +
-   # geom_point(aes(size = team, col = lang)) +
-    geom_point(aes(size = activity_period, col = lang)) +
-    facet_grid(. ~ lang)
-    #labs(subtitle="x Vs y", 
-    #   y="yyy", 
-     #  x="xxx", 
-      # title="xyxyx", 
-       #caption = "Source: TravisTorrent")
-
+    geom_point(aes(size = activity_period, col = lang), alpha = .5) +
+    geom_line(aes(col = lang)) +
+    labs(subtitle="Número de pessoas no time Vs Número de linhas de código ", 
+       x="Tamanaho do time", 
+       y="Tamanho do código", 
+       title="Tamanhos dos times e linhas de código")  
     
 ```
+
+
+    No gráfico acima, vemos o relacionamento entre o tamanho dos projetos e o tamanho dos times.
+    Percebemos que as variáveis não são bem correlatas, pois, independente do tamanho dos times, o tamanho do projeto sempre varia mais ou menos na mesma faixa de valores nas duas linguagens. Vemos isso ao observar que a maioria dos pontos concentra-se mais abaixo no gráfico. É possível perceber também que apenas alguns projetos java e ruby têm picos de valores que ultrapassam a maioria, sendo um projeto java, em específico, que foge ainda mais do padrão observado, sendo bem maior que todos.
+    Não conseguimos chegar a uma conclusão bem definida no que diz respeito ao período de atividade dos projetos das duas linguagens, pois o tamanho dos pontos não é uma coisa muito fácil de diferenciar. Veremos como responder isso adiante.
 
 ```{r}
 projetos %>%
     filter(team <= 60) %>%
     ggplot(aes(x = team, y = sloc_end, fill = lang)) +
-   # geom_point(aes(size = team, col = lang)) +
-    geom_point(aes(size = activity_period, col = lang)) +
+    geom_point(aes(size = activity_period, col = lang), alpha = .5) +
     geom_line() +
-    facet_grid(. ~ lang)
-    #labs(subtitle="x Vs y", 
-    #   y="yyy", 
-     #  x="xxx", 
-      # title="xyxyx", 
-       #caption = "Source: TravisTorrent")
+     scale_y_log10() + 
+    facet_grid(. ~ lang) +
+    labs(subtitle="Número de pessoas no time Vs Número de linhas de código (log10)", 
+       x="Tamanaho do time", 
+       y="Tamanho do código (log10)", 
+       title="Tamanhos dos times e linhas de código") 
 ```
+
+    No gráfico acima, usamos a escala logarítmica no eixo y e separamos os pontos das linguagens para facilitar a visualização. Nele podemos observar que a maioria dos pontos das duas linguagens concentra-se do lado esquerdo, nos levando à conclusão de que a maioria dos projetos tem times pequenos (menos de 30 pessoas).
+
 
 
 ```{r}
 projetos %>%
-    filter(team <= 60) %>%
-    ggplot(aes(x = cut(team, breaks = 4), y = sloc_end)) +
-    geom_point(aes(size = activity_period, col = lang)) 
-    #labs(subtitle="x Vs y", 
-    #   y="yyy", 
-     #  x="xxx", 
-      # title="xyxyx", 
-       #caption = "Source: TravisTorrent")
+    ggplot(aes(y = activity_period, x = lang)) +
+    geom_jitter(aes(size = sloc_end, col = cut(team, breaks = c(0, 15, 30, 45, 60)))) +
+    labs(x="Linguagem",
+       y="Período de atividade (meses)", 
+       title="Período de atividade para projetos Java e Ruby") +
+     scale_color_discrete(name = "Tamanhos de times")
 
     
 ```
+
+    Na visualização acima, podemos perceber que existem vários projetos ruby que ultrapassaram 60 meses de desenvolvimento, enquanto java possui apenas 1. Em relação aos tamanhos dos times, podemos perceber que a maioria em ambas as linguagens é de 0 a 15 pessoas. Fica difícil, no entanto, observar os tamanhos dos códigos nesse gráfico. Então vamos mudar o gráfico para facilitar a observação dessa variável.
+
 
 ```{r}
 projetos %>%
     ggplot(aes(x = activity_period, y = sloc_end)) +
-    geom_point(aes(size = activity_period, col = cut(team, breaks = c(0, 15, 30, 45, 60)))) +
-    facet_grid(. ~ lang)
-    #labs(subtitle="x Vs y", 
-    #   y="yyy", 
-     #  x="xxx", 
-      # title="xyxyx", 
-       #caption = "Source: TravisTorrent")
-
-    
-```
-```{r}
-projetos %>%
-    ggplot(aes(x = activity_period, y = sloc_end, fill = cut(team, breaks = c(0, 15, 30, 45, 60)))) +
-    geom_area() +
-    facet_grid(. ~ lang)
-    #labs(subtitle="x Vs y", 
-    #   y="yyy", 
-     #  x="xxx", 
-      # title="xyxyx", 
-       #caption = "Source: TravisTorrent")
+    geom_point(aes(col = cut(team, breaks = c(0, 15, 30, 45, 60)))) +
+    scale_y_log10() + 
+    facet_grid(. ~ lang) +
+    labs(x="Período de atividade (meses)",
+       y="Número de linhas de código (log10)", 
+       title="Período de atividade e tamanho dos projetos Java e Ruby") +
+    scale_color_discrete(name = "Tamanhos de times")
 
     
 ```
 
-```{r}
-projetos %>%
-    ggplot(aes(x = cut(activity_period, breaks = c(0, 12, 24, 36, 48, 60, 72, 84), labels = c("Até 1 ano", "1 a 2 anos", "2 a 3 anos", "3 a 4 anos", "4 a 5 anos" , "5 a 6 anos", "6 a 7 anos")), y = team, fill = lang)) +
-    geom_col() 
-    #labs(subtitle="x Vs y", 
-    #   y="yyy", 
-     #  x="xxx", 
-      # title="xyxyx", 
-       #caption = "Source: TravisTorrent")
-
-    
-```
-
-```{r}
-projetos %>%
-    ggplot(aes(x = cut(activity_period, breaks = c(0, 12, 24, 36, 48, 60, 72, 84), labels = c("Até 1 ano", "1 a 2 anos", "2 a 3 anos", "3 a 4 anos", "4 a 5 anos" , "5 a 6 anos", "6 a 7 anos")), y = team, fill = lang)) +
-    geom_col(position = "dodge") 
-    #labs(subtitle="x Vs y", 
-    #   y="yyy", 
-     #  x="xxx", 
-      # title="xyxyx", 
-       #caption = "Source: TravisTorrent")
-
-    
-```
-```{r}
-projetos %>%
-    ggplot(aes(x = activity_period, y = team, fill = lang, colour = lang)) +
-    geom_area() 
-    #labs(subtitle="x Vs y", 
-    #   y="yyy", 
-     #  x="xxx", 
-      # title="xyxyx", 
-       #caption = "Source: TravisTorrent")
-
-    
-```
-
-```{r}
-projetos %>%
-    ggplot(aes(x = cut(activity_period, breaks = c(0, 12, 24, 36, 48, 60, 72, 84), labels = c("Até 1 ano", "1 a 2 anos", "2 a 3 anos", "3 a 4 anos", "4 a 5 anos" , "5 a 6 anos", "6 a 7 anos")), y = team, fill = lang)) +
-    geom_col(position = "dodge") 
-    #labs(subtitle="x Vs y", 
-    #   y="yyy", 
-     #  x="xxx", 
-      # title="xyxyx", 
-       #caption = "Source: TravisTorrent")
-
-    
-```
+    No gráfico acima, usamos a representação logarítmica no eixo y para facilitar a visualização dos tamanhos de código. Essa visualização nos faz perceber o comportamento do tamanho de código dos projetos à medida que o período de atividade aumenta. Não vemos uma correlação bem definida entre as duas variáveis, mas podemos perceber que projetos java tendem a possuir mais linhas de código no geral do que projetos ruby. Essa conclusão é possível ao repararmos que os pontos dos projetos java projetam-se mais acima que os pontos dos projetos ruby, no geral. Aqui também não é muito fácil perceber em qual linguagem os projetos possuem times com maior número de pessoas, mas essa questão já foi sanada anteriormente.
 
 
-
-    
+    Podemos perceber, então, que cada gráfico possibilita a análise facilitada de algum fator relacionado aos dados. Não temos, portanto, um gráfico que seja bom ou ruim, temos gráficos que respondem melhor determinada pergunta ou outra. Basta encontrar um gráfico que melhor se adeque ao que queremos responder. 
+    Nesse artigo, por exemplo, precisamos variar os canais onde cada variável era exibida para facilitar a análise dos relacionamentos entre todas as variáveis. Assim, chegamos a pequenos resultados que, somados, respondem á pergunta proposta.
