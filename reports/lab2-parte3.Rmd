@@ -1,0 +1,93 @@
+---
+title: "FPCC2 Lab2 Parte 3 - Andreza Raquel"
+output:
+  html_document:
+    df_print: paged
+---
+
+    Página para análise de dados vindos do TravisTorrent.
+
+```{r setup, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(here)
+library(knitr)
+library(ggplot2)
+library(dplyr, warn.conflicts = F)
+theme_set(theme_bw())
+```
+
+## Lendo e limpando os dados de projetos
+
+    Lendo os projetos coletados e formatados por Nazareno. 
+
+```{r read}
+projetos = read_csv(here::here("data/projetos.csv"))
+```
+
+    Analisando os dados para buscar coisas estranhas.
+    O filtro abaixo retornou um projeto com tamanho de time igual a 0, e isso é muito estranho. Então, por enquanto, vamos tirá-lo da lista de projetos para ele não atrapalhar os resultados.
+
+```{r}
+
+estranho <- projetos %>%
+  filter(team < 1)
+
+estranho
+
+```
+
+    Para isso, usamos a função de filtro para deixar de fora os projetos da linguagem javascript - são poucos projetos com essa linguagem - e com tamanho de time < 1.
+    
+```{r}
+projetos = projetos %>% 
+    filter(lang != "javascript", team >= 1)
+ 
+```
+
+    
+   
+#### Questão derivada da segunda pergunta: Projetos que levaram mais tempo de implementação são necessariamente maiores?
+
+    Para responder essa pergunta, além da variável activity_period, vamos utilizar a variável sloc_end - que é o número de linhas de código presentes na ultima versão "commitada" do projeto. Para facilitar a visualização, vamos observar o número de linhas de código em uma escala logarítmica. 
+
+
+```{r}
+p <- projetos  %>%
+    ggplot(aes(x = sloc_end, y = activity_period, color = lang)) +
+    geom_point() +
+    geom_jitter(alpha = .4, size = 2) + 
+    scale_x_log10() + 
+    labs(x="Número de linhas de código (log10)",
+       y="Período de atividade (meses)", 
+       title="Período de atividade vs. tamanho do projeto", color = "Linguagem")
+
+pdf("figura1-sem-formatacao.pdf") # para pngs, seria png("fig1.png", res = 300)
+print(p)
+dev.off()
+   
+```
+```{r}
+p <- projetos  %>%
+    ggplot(aes(x = sloc_end, y = activity_period, color = lang)) +
+    geom_point() +
+    geom_jitter(alpha = .9) + 
+    scale_x_log10() + 
+    labs(x="Número de linhas de código (log10)", 
+       y="Período de atividade (meses)", 
+       title="Período de atividade vs. tamanho do projeto", color = "Linguagem") +
+    theme(axis.text = element_text(size=7), 
+          title = element_text(size=8, face="bold"),
+          legend.text = element_text(size=7, face="bold"),
+          axis.title = element_text(size=7, face="bold"),
+          legend.position = "top",  
+          legend.margin = margin(t = 0, r = 0, b = -5, l = 0, unit = "pt"))
+
+pdf("figura2-com-formatacao.pdf", width = 3.4, height = 2) # para pngs, seria png("fig1.png", res = 300)
+print(p)
+dev.off()
+   
+```
+
+
+     Com base no gráfico acima, podemos ver que a correlação entre as duas variáveis é bem fraca, já que os dados estão bem espalhados e não têm um formato que mostre alguma relação. Então, podemos responder que projetos com maior tempo de atividade NÃO têm, necessariamente, um número maior de linhas de código nessa base de dados. 
+
